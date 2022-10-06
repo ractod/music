@@ -13,16 +13,15 @@ import FreeModeSlider from '@components/common/FreeModeSlider';
 
 // library
 import { SwiperSlide } from 'swiper/react';
+import axios from 'axios';
 
 // next.js
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-const songs = [1,2,3,4,5,6,7,8,9]
+const CategoryPage = ({ songsData }) => {
 
-const CategoryPage = () => {
-
-    const { query } = useRouter()
+    const { query } = useRouter() 
 
     return (
         <>
@@ -32,22 +31,22 @@ const CategoryPage = () => {
 
             <Banner title={query.categorySlug} bgColor="from-page-category" />   
             
-            <TopSongsSec />
+            <TopSongsSec songsData={songsData.topSongs} />
 
             {/* newest songs part */}
             <FreeModeSlider title="Newest Songs">
-                { songs.map(song => (
+                { songsData.newestSongs.map(song => (
                     <SwiperSlide key={song} className="w-fit">
-                        <VerticalSongCard />
+                        <VerticalSongCard songData={song} />
                     </SwiperSlide>
                 )) }
             </FreeModeSlider> 
 
             {/* best songs part */}
             <FreeModeSlider title="Best Songs">
-                { songs.map(song => (
+                { songsData.bestSongs.map(song => (
                     <SwiperSlide key={song} className="w-fit">
-                        <VerticalSongCard />
+                        <VerticalSongCard songData={song} />
                     </SwiperSlide>
                 )) }
             </FreeModeSlider>
@@ -58,3 +57,18 @@ const CategoryPage = () => {
 };
 
 export default CategoryPage;
+
+export const getStaticPaths = () => {
+    const paths = [
+        { params: { categorySlug: "rock" } },
+        { params: { categorySlug: "pop" } },
+        { params: { categorySlug: "rap" } },
+    ]
+
+    return { paths, fallback: false }
+}
+
+export const getStaticProps = async context => {
+    const { data } = await axios.get(`/songs/category/${context.params.categorySlug}`)
+    return { props: { songsData: data } }
+}

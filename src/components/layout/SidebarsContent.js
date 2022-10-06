@@ -15,6 +15,7 @@ import { useRouter } from 'next/router';
 // redux 
 import { useDispatch, useSelector } from 'react-redux';
 import { openModal } from '@reduxmodals/actions';
+import { logoutUser } from '@reduxauth/authActions';
 
 const Item = ({ icon, text, bgColor = null, active = false, href = null, onClick = null}) => (
     <ListItem className="flex items-center gap-x-4 mt-7 p-0 first:mt-0" onClick={onClick}>
@@ -36,25 +37,24 @@ const Item = ({ icon, text, bgColor = null, active = false, href = null, onClick
     </ListItem>
 )
 
-const isLogin = false
-
 // * desktop sidebar and mobile sidebar content are same
 const SidebarsContent = () => {
 
     const { pathname, query } = useRouter()
     const dispatch = useDispatch()
-    const { loginModal, signupModal } = useSelector(store => store.modalsState)
+    const { modalsState, authState } = useSelector(store => store)
 
     const openHandler = () => dispatch(openModal("loginModal"))
+    const logoutHandler = () => dispatch(logoutUser())
 
     return (
         <>
             <Box>
                 <List>
                     {
-                        isLogin ?
-                        <Item text="Logout" icon={faRightFromBracket}  /> :
-                        <Item text="Login / Signup" icon={faUser} onClick={openHandler} active={loginModal.isOpen || signupModal.isOpen} /> 
+                        authState.userStatus == "authorized" ?
+                        <Item text="Logout" icon={faRightFromBracket} onClick={logoutHandler} /> :
+                        <Item text="Login / Signup" icon={faUser} onClick={openHandler} active={modalsState.loginModal.isOpen || modalsState.signupModal.isOpen} /> 
                     }
                 </List>
             </Box>

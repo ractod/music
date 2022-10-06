@@ -7,10 +7,15 @@ import { IconButton, List, ListItemIcon, ListItemText, Menu, MenuItem, Box, useT
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as faHeartSolid, faFolderClosed, faCirclePlus, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartOutlined } from '@fortawesome/free-regular-svg-icons';
+import axios from 'axios';
 
 // redux
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { openModal } from '@reduxmodals/actions';
+import { updateUserLikedSongs, updateUserPlaylists } from '@reduxauth/authActions';
+
+// helper
+import { notify, hasItem } from 'helpers/helpers';
 
 const Item = ({ icon, title, onClick = null, color = null }) => (
     <MenuItem onClick={onClick} className="py-3">
@@ -23,49 +28,79 @@ const Item = ({ icon, title, onClick = null, color = null }) => (
     </MenuItem>
 )
 
-const SongOptionsMenu = ({ isLiked, className }) => {
+const SongOptionsMenu = ({ className = "", songData }) => {
 
     // anchor tag for mui menu component
     const [anchorEl, setAnchorEl] = useState(false)
+
     const muiTheme = useTheme()
     const widthMediaMatches = useMediaQuery(muiTheme.breakpoints.down("md"))
-    const touchAbleMediaMatches = useMediaQuery("(hover: none)")
+    const touchableMediaMatches = useMediaQuery("(hover: none)")
+
+
+    const { likedSongs, playlists } = useSelector(store => store.authState)
     const dispatch = useDispatch()
-
-    const addHandler = () => dispatch(openModal("addPlaylistModal"))
-
-    const clickHandler = event => {
-        widthMediaMatches || touchAbleMediaMatches ?
-        dispatch(openModal("songOptionModal")) :
+    
+    const openPlaylistModal = () => dispatch(openModal("addPlaylistModal"))
+    const openCloseMenu = event => {
+        widthMediaMatches || touchableMediaMatches ?
+        dispatch(openModal("songOptionModal", { songData })) :
         setAnchorEl(prevState => prevState ? null : event.currentTarget) 
     }
-
+    const likeHandler = () => {
+        axios.put(`/songs/like/${songData._id}`)
+        .then(response => {
+            notify("success", response.data.message)
+            dispatch(updateUserLikedSongs(response.data.song))
+        })
+        .catch(error => notify("error", error?.response?.data?.message || "failed to connect to the server"))
+    }
+    // remove song from playlist
+    const addToPlaylist = (playlistId) => {
+        axios.put(`/playlist/addsong/${playlistId}`, { songId: songData._id })
+            .then(response => {
+                notify("success", response.data.message)
+                dispatch(updateUserPlaylists(response.data.playlist, songData))
+                console.log(response.data)
+            })
+            .catch((error) => notify("error", error?.response?.data?.message || "failed to connect to the server") )
+    }
+    
     return (
         <Box>
             {/* option button */}
-            <IconButton className={`text-white text-lg sm:text-2xl ${className}`} onClick={clickHandler}>
-                <FontAwesomeIcon icon={faEllipsisVertical} />
+            <IconButton className={`text-white text-lg sm:text-2xl ${className}`} onClick={openCloseMenu}>
+                <FontAwesomeIcon icon={faEllipsisVertical}  />
             </IconButton>
 
             {/* options menu part */}
             <Menu 
                 open={!!anchorEl} 
-                anchorEl={anchorEl} 
-                onClose={clickHandler} 
+                anchorEl={anchorEl || null} 
+                onClose={openCloseMenu} 
                 MenuListProps={{ className: "py-0 md:py-2 divide-x-2 divide-border " }} 
                 PaperProps={{ className: "relative w-52 bg-background-light text-white bg-none overflow-visible" }}
             >
-                <Item title={isLiked ? "UnLike" : "Like"} icon={isLiked ? faHeartSolid : faHeartOutlined} color="text-red" />
+                <Item title={hasItem(likedSongs, songData._id) ? "UnLike" : "Like"} icon={hasItem(likedSongs, songData._id) ? faHeartSolid : faHeartOutlined} color="text-red" onClick={likeHandler} />
 
                 <Box className="group">
                     <Item title="Add To Playlist" icon={faCirclePlus} />
                     <List className="absolute left-0 bottom-0 w-52 min-h-[180px] max-h-[180px] overflow-y-auto -translate-x-full rounded-[4px] bg-background-light hidden group-hover:block">
                         {/* add playlist button */}
-                        <Item title="Add Playlist" icon={faCirclePlus} onClick={addHandler} /> 
+                        <Item title="Add Playlist" icon={faCirclePlus} onClick={openPlaylistModal} /> 
                         {/* user's playlists */}
-                        <Item title="sad" icon={faFolderClosed} />
-                        <Item title="happy" icon={faFolderClosed} />
-                       
+                        {playlists.map(playlist => (
+                            <Item 
+                                key={playlist._id} 
+                                title={
+                                    hasItem(playlist.songs, songData._id) ? 
+                                    `Remove From ${playlist.name}` : 
+                                    `Add To ${playlist.name}`
+                                }  
+                                onClick={() => addToPlaylist(playlist._id) }
+                                icon={faFolderClosed} 
+                            />
+                        ))}
                     </List>
                 </Box>
             </Menu>

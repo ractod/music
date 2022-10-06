@@ -11,12 +11,16 @@ import { Box, Button, Typography } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolderClosed, faPlus } from '@fortawesome/free-solid-svg-icons';
 
+// components
+import Loading from '@components/common/Loading';
+import Authorization from '@components/auth/Authorization';
+
 // next.js
 import Link from 'next/link';
 import Head from 'next/head';
 
 // redux
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { openModal } from '@reduxmodals/actions';
 
 const AddButton = ({ onClick }) => (
@@ -27,26 +31,29 @@ const AddButton = ({ onClick }) => (
     </Grid>
 )
 
-const PlayListCard = () => (
+const PlayListCard = ({ palylistData: { _id, name } }) => (
     <Grid xs={6} sm={3} lg={2} >
-        <Link href="/playlists/test">
+        <Link href={`/playlists/${_id}`}>
             <a className="w-full">
                 <Box className="flex items-center justify-center aspect-square bg-gradient-to-tr from-secondary to-primary text-white rounded-md transition-all duration-150 ease-out md:hover:-translate-y-4">
                     <FontAwesomeIcon icon={faFolderClosed} size="4x" />
                 </Box>
-                <Typography component="span" className="block text-muted  text-sm md:text-base font-medium mt-2"> Sad Playlist </Typography>
+                <Typography component="span" className="block text-muted  text-sm md:text-base font-medium mt-2"> 
+                    { name }
+                </Typography>
             </a>
         </Link>
     </Grid>
 )
 
-const playlistsData = [1,2,3,4,5,6]
-
-const playlists = () => {
+const PlaylistsPage = () => {
 
     const dispatch = useDispatch()
+    const { playlists, userStatus } = useSelector(store => store.authState)
 
     const openHandler = () => dispatch(openModal("addPlaylistModal"))
+
+    if(userStatus == "loading") return <Loading />
 
     return (
         <>
@@ -54,13 +61,15 @@ const playlists = () => {
                 <title> Playlists </title>  
             </Head>
 
-            <Banner title="Playlist" bgColor="from-page-playlist" />
-            <Grid component="section" container spacing={3} className="mt-10">
-                <AddButton onClick={openHandler} />
-                { playlistsData.map(playlist => <PlayListCard key={playlist} />) }
-            </Grid>
+            <Authorization>
+                <Banner title="Playlist" bgColor="from-page-playlist" />
+                <Grid component="section" container spacing={3} className="mt-10">
+                    <AddButton onClick={openHandler} />
+                    { [...playlists].reverse().map(playlist => <PlayListCard key={playlist._id} palylistData={playlist} />) }
+                </Grid>
+            </Authorization>
         </>
     );
 };
 
-export default playlists;
+export default PlaylistsPage;

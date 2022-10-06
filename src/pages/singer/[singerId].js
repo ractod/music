@@ -4,8 +4,7 @@ import React from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 
-// components
-import Banner from '@components/common/Banner';
+// component
 import HorizontalSongCard from '@components/common/HorizontalSongCard';
 
 // mui components
@@ -14,13 +13,12 @@ import { Box, Typography } from '@mui/material';
 // library
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
 
-// image
-import testImg from "assets/images/test2.jpg"
+const SingerPage = ({ singerData }) => {
 
-const songs = [1,2,3,4,5,6,7,8,9]
+    console.log(singerData)
 
-const SingerPage = () => {
     return (
         <>
             <Head>
@@ -35,20 +33,20 @@ const SingerPage = () => {
                         <FontAwesomeIcon icon={faMicrophone} size="4x" />
                     </Box>
                     <Typography component="span" className="text-white font-semibold text-xl sm:text-2xl md:text-3xl">
-                        Justin Bieber
+                        { singerData.fullName }
                     </Typography>
                 </Box>
                 {/* image */}
                 <Box className="absolute left-0 top-0 w-full h-[350px] -z-10">
-                    <Image src={testImg} alt="singer cover" layout='fill' objectFit='cover' />
+                    <Image src={singerData.cover} alt="singer cover" layout='fill' objectFit='cover' />
                 </Box>
             </section>
 
             {/* singer's songs */}
             <section className="section-mt">
-                <Typography component="span" className="title">Justin Bieber's Songs</Typography>
+                <Typography component="span" className="title"> {singerData.fullName}&#39;s Songs </Typography>
                 <Box className="section-content-mt">
-                    { songs.map(song => <HorizontalSongCard key={song} />) }
+                    { singerData.songs.map((song, index) => <HorizontalSongCard key={song._id} songData={song} rank={index} />) }
                 </Box>
             </section>
         </>
@@ -56,3 +54,14 @@ const SingerPage = () => {
 };
 
 export default SingerPage;
+
+export const getStaticPaths = async () => {
+    const { data } = await axios.get("/singer")
+    const paths = data.singers.map(singer => ({params: { singerId: singer._id }}))
+    return { paths, fallback: false }
+}
+
+export const getStaticProps = async context => {
+    const { data } = await axios.get(`/singer/${context.params.singerId}`)
+    return { props: { singerData: data } }
+}

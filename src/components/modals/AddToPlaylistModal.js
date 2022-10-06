@@ -6,10 +6,15 @@ import { Box, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, Li
 // redux
 import { useSelector, useDispatch } from 'react-redux';
 import { closeModal, openModal } from '@reduxmodals/actions';
+import { updateUserPlaylists } from '@reduxauth/authActions';
 
 // library
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCirclePlus, faFolderClosed, faXmark } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+
+// helper
+import { notify, hasItem } from 'helpers/helpers';
 
 const Item = ({ title, icon, onClick = null }) => (
     <ListItem disableGutters onClick={onClick}>
@@ -26,18 +31,28 @@ const DialogTransition = React.forwardRef((props, ref) => (
     <Slide direction="up" ref={ref} {...props} />
 ));
 
+DialogTransition.displayName = "DialogTransition"
+
 const AddToPlaylistModal = () => {
 
-    const { addToPlaylistModal }  = useSelector(store => store.modalsState)
+    const { modalsState: { addToPlaylistModal: { isOpen, data } }, authState: { user, playlists } }  = useSelector(store => store)
     
     const dispatch = useDispatch()
 
     const closeHandler = () => dispatch(closeModal("addToPlaylistModal"))
     const openHandler = () => dispatch(openModal("addPlaylistModal"))
+    const playlistRequestHandler = (playlistId) => {
+        axios.put(`/playlist/addsong/${playlistId}`, { songId: data.songData._id })
+            .then(response => {
+                notify("success", response.data.message)
+                dispatch(updateUserPlaylists(response.data.playlist, data.songData))
+            })
+            .catch((error) => notify("error", error?.response?.data?.message || "failed to connect to the server") )
+    }
 
     return (
         <Dialog
-            open={addToPlaylistModal.isOpen}
+            open={isOpen}
             TransitionComponent={DialogTransition}
             className="p-2"
             PaperProps={{ className: "w-full sm:w-[400px] min-h-[400px] max-h-[400px] m-0 rounded-md bg-background-light bg-none" }}
@@ -57,8 +72,18 @@ const AddToPlaylistModal = () => {
                     {/* add playlist button */}
                     <Item title="Add Playlist" icon={faCirclePlus} onClick={openHandler} />
                     {/* user's playlists */}
-                    <Item title="sad" icon={faFolderClosed} />
-                    <Item title="happy" icon={faFolderClosed} />
+                    {playlists.map(playlist => (
+                        <Item 
+                            key={playlist._id} 
+                            title={
+                                hasItem(playlist.songs, data?.songData._id) ? 
+                                `Remove From ${playlist.name}` : 
+                                `Add To ${playlist.name}`
+                            }  
+                            onClick={() => playlistRequestHandler(playlist._id) }
+                            icon={faFolderClosed} 
+                        />
+                    ))}
                 </List>
             </DialogContent>
         </Dialog>

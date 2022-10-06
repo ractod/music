@@ -28,8 +28,6 @@ const BottomBar = () => {
         if(mediaMatches) setIsSongViewOpen(true)
     }
 
-    
-
     return (
         <>
             <Box 
@@ -40,20 +38,22 @@ const BottomBar = () => {
             > 
 
                 {/* song info part */}
-                <Box className="w-full sm:w-fit flex items-center justify-between flex-wrap gap-x-4">
-                    <Box className="flex items-center gap-x-4">
-                        <Box className="w-12 md:w-16">
+                <Box className="min-w-[20px] sm:w-fit flex items-center justify-between flex-nowrap gap-x-4">
+                    <Box className="min-w-[20px] flex items-center gap-x-4">
+                        <Box className="min-w-[40px] md:min-w-[64px]">
                             <Image src={testImg} alt="song cover" layout='responsive' width={1} height={1} className="rounded-xl" />
                         </Box>
-                        <Box >
+                        <Box className="min-w-[20px]">
                             <Typography 
-                                component="span" 
-                                className="text-white max-w-[100px] text-ellipsis overflow-hidden whitespace-nowrap 
+                                
+                                className="text-white text-ellipsis overflow-x-hidden whitespace-nowrap 
                                 text-xs md:text-sm font-medium"
                             > 
                                 stay 
                             </Typography>
-                            <Typography component="span" className="block text-muted max-w-[100px] text-ellipsis overflow-hidden whitespace-nowrap text-xs md:text-sm mt-[2px]"> justin bieber sdsd sdfu jykusdf  fghfh </Typography>
+                            <Typography className="block text-muted text-ellipsis overflow-x-hidden whitespace-nowrap text-xs md:text-sm mt-[2px]">
+                                justin bieber sdsd sdfu jykusdf  fghfh 
+                            </Typography>
                         </Box>
                     </Box>
                     <IconButton color="red">

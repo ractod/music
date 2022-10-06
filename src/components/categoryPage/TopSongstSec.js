@@ -13,41 +13,43 @@ import { faPlay } from '@fortawesome/free-solid-svg-icons';
 
 // components
 import SongOptionsMenu from '@components/common/SongOptionsMenu';
-
-// images
-import testImg from "assets/images/test2.jpg"
+import SliderButtons from '@components/common/SliderButtons';
 
 // next.js
 import Image from 'next/image';
-import SliderButtons from '@components/common/SliderButtons';
+import Link from 'next/link';
 
-const Slide = () => (
+const Slide = ({ songData, songData: { name, cover, singers } }) => (
     <Box className="relative aspect-video flex flex-col justify-between p-3 z-10">
+
         {/* buttons part */}
-        <Box className="flex items-center gap-x-2">
-            <Box className="text-sm w-8 h-8 sm:w-[45px] sm:h-[45px] flex items-center justify-center rounded-xl bg-primary text-white cursor-pointer z-10">
-                <SongOptionsMenu className="w-[50px] h-[50px]" />
-            </Box>
-            <Box className="w-8 h-8 sm:w-[45px] sm:h-[45px] flex items-center justify-center rounded-xl bg-primary text-white cursor-pointer z-10">
-                <IconButton className="text-white text-sm sm:text-base">
-                    <FontAwesomeIcon icon={faPlay} />
-                </IconButton>
-            </Box>
+        <Box className="w-8 h-8 sm:w-[45px] sm:h-[45px] flex items-center justify-center rounded-xl bg-primary text-white cursor-pointer z-10">
+            <IconButton className="text-white text-sm sm:text-base">
+                <FontAwesomeIcon icon={faPlay} />
+            </IconButton>
         </Box>
 
         {/* song info part */}
         <Box className="flex flex-col gap-y-1">
-            <Typography component='span' vaiant="h5" className="text-white text-sm md:text-base font-semibold"> Eminem </Typography>
-            <Typography component='span' className="text-muted text-xs md:text-sm font-semibold"> Shadow Of Song </Typography>
+            <Typography component='span' vaiant="h5" className="text-white text-sm md:text-base font-semibold"> { name } </Typography>
+            <Box className="text-muted text-xs md:text-sm font-semibold">
+                {
+                    singers.map((singer, index) => (
+                        <Link key={singer._id} href={`/singer/${singer._id}`}>
+                            <a className="block text-sm md:text-base text-white text-ellipsis overflow-hidden whitespace-nowrap font-medium" > 
+                                { singer.fullName } { index != singers.length - 1 ? "," : "" } 
+                            </a>
+                        </Link>
+                    ))
+                }
+            </Box>
         </Box>
 
-        <Image src={testImg} alt='song cover' layout='fill' className="rounded-b-md md:rounded-none md:rounded-l-md -z-10" />
+        <Image src={cover} blurDataURL={cover} loading="lazy" placeholder='blur' alt='song cover' layout='fill' objectFit='cover' className="rounded-b-md md:rounded-none md:rounded-l-md -z-10" />
     </Box>
 )
 
-const songs = [1,2,3,4,5,6,7]
-
-const TopSongsSec = () => {
+const TopSongsSec = ({ songsData }) => {
 
     const nextBtn = useRef(null)
     const prevBtn = useRef(null)
@@ -84,9 +86,9 @@ const TopSongsSec = () => {
                 modules={[EffectCoverflow, Navigation]}
                 className="section-content-mt"
             >
-                {songs.map(song => (
-                    <SwiperSlide key={song} >
-                        <Slide />
+                {songsData.map(song => (
+                    <SwiperSlide key={song._id} >
+                        <Slide songData={song} />
                     </SwiperSlide>
                 ))}  
             </Swiper>

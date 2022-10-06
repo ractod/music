@@ -12,10 +12,12 @@ import BottomBar from './BottomBar';
 import LoginModal from '@components/modals/LoginModal';
 import SignupModal from '@components/modals/SignupModal';
 import AddToPlaylistModal from '@components/modals/AddToPlaylistModal';
-import LoadingModal from '@components/modals/LoadingModal';
 import SongOptionModal from '@components/modals/SongOptionModal';
 import RemovePlaylistModal from '@components/modals/RemovePlaylistModal';
 import AddPlaylistModal from '@components/modals/AddPlaylistModal';
+
+// library
+import { ToastContainer } from 'react-toastify';
 
 const Layout = ({ children }) => (
     <>
@@ -36,9 +38,6 @@ const Layout = ({ children }) => (
         {/* bottombar */}
         <BottomBar />
 
-        {/* loading */}
-        <LoadingModal />
-
         {/* backdrop shadows part */}
         <Box>
             <span className="fixed left-0 bottom-0 w-[220px] h-[340px] rounded-full bg-purple-gradient blur-[60px] -z-50"></span>
@@ -46,6 +45,9 @@ const Layout = ({ children }) => (
             <span className="fixed top-0 right-[-100px] w-[700px] h-[150px] rotate-[45deg] bg-second-blue-gradient blur-[100px] -z-50"></span>
             <span className="fixed top-0 right-[150px] w-[700px] h-[150px] rotate-[-45deg] bg-third-blue-gradient blur-[100px] -z-50"></span>
         </Box>
+
+        {/* notification */}
+        <ToastContainer position='top-right' theme='dark' autoClose={2000} />
 
         {/* modals part */}
         <Box>

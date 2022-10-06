@@ -32,9 +32,9 @@ const AllCategoriesSec = () => {
             <Typography component="span" className="title"> All Categories </Typography>
 
             <Grid container spacing={4} className="section-content-mt">
-                <CategoryCard title="Pop" href="/category/pop" icon={faFire}  />
-                <CategoryCard title="Rock" href="/category/rock" icon={faGuitar} />
-                <CategoryCard title="Rap" href="/category/rap" icon={faMusic} />
+                <CategoryCard title="Pop" href="/categories/pop" icon={faFire}  />
+                <CategoryCard title="Rock" href="/categories/rock" icon={faGuitar} />
+                <CategoryCard title="Rap" href="/categories/rap" icon={faMusic} />
             </Grid>
         </article>
     );

@@ -15,15 +15,12 @@ import FreeModeSlider from '@components/common/FreeModeSlider';
 
 // library
 import { SwiperSlide } from 'swiper/react';
+import axios from 'axios';
 
 // next.js
 import Head from 'next/head';
 
-const topTrending = [1,2,3,4,5,6,7]
-const newestSongs = [1,2,3,4,5]
-const topSongs = [1,2,3,4,5]
-
-const HomePage = () => {
+const HomePage = ({ songsData }) => {
     return (
         <>
             <Head>
@@ -33,14 +30,15 @@ const HomePage = () => {
 
             <Banner title="Discover" bgColor="from-page-home" />   
             
-            <PopularSec />
+            <PopularSec songsData={songsData.popularSongs} />
 
             {/* top trending songs section */}
             <FreeModeSlider title="Top Trending" href="/trending">
                 {
-                    topTrending.map(song => (
-                        <SwiperSlide key={song} className="w-fit">
-                            <VerticalSongCard />
+                    songsData.trendingSongs.map(song => (
+                        
+                        <SwiperSlide key={song._id} className="w-fit">
+                            <VerticalSongCard songData={song} />
                         </SwiperSlide>
                     ))
                 }
@@ -51,13 +49,13 @@ const HomePage = () => {
                 <Grid xs={12} md={6}>
                     <Typography component="span" className="title">Top Songs</Typography>
                     <Divider className="mb-2 section-content-mt" />
-                    { topSongs.map(song => <HorizontalSongCard key={song} isHalf={true} />) }
+                    { songsData.topSongs.map((song, index) => <HorizontalSongCard key={song._id} songData={song} rank={index} />) }
                 </Grid>
                 {/* newest songs part */}
                 <Grid xs={12} md={6}>
                     <Typography component="span" className="title">Newest Songs</Typography>
                     <Divider className="mb-2 section-content-mt" />
-                    { newestSongs.map(song => <HorizontalSongCard key={song} isHalf={true} />) }
+                    { songsData.newestSongs.map((song, index) => <HorizontalSongCard key={song._id} songData={song} rank={index} />) }
                 </Grid>
             </Grid>
         </>
@@ -65,3 +63,8 @@ const HomePage = () => {
 }
 
 export default HomePage;
+
+export const getStaticProps = async context => {
+    const { data } = await axios.get("/songs")
+    return { props: { songsData: data } }
+}
